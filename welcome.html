@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fiestazscaler2023.com</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+</head>
+<body onload="cargaDatos()">
+    <!-- <img src="img/logo.jpg" alt="" srcset="" class="centerImage" onclick="borraCookie()"/> -->
+    
+    <div class="espacio">
+        <img src="img/logo.png" class="logo" alt="">
+        <div class="title2">Bienvenido al Portal de <br> Zscaler Fiesta 2023</div>
+    </div>
+    <br><br><br>
+    <div class="title" id="nombreCompleto">Total de puntos conseguidos:</div>
+    <div class="title3" id="puntosTotales">0 puntos</div>
+    <br><br><br>
+    <img src="img/muchasMonedas.webp" alt="" srcset="" class="centerImage4" />
+    <script src="js/cookies.js"></script>
+    <script>
+        function borraCookie(){
+            setCookie("uuidUsuarios", "",10)
+            localStorage.setItem("uuidUsuarios", "");
+        }
+        
+        let urlServer = "https://mosaico.app:4000/fiestazscaler2023/"
+        async function cargaDatos(){
+
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            let uuidExperiencias = urlParams.get('uuid');
+            let numPuntos = urlParams.get('puntos');
+            
+            if ( uuidExperiencias=="" && numPuntos=="" ){
+                console.log("Empezamos desde cero")
+            }else{
+                console.log({uuidExperiencias})
+                console.log({numPuntos})
+            }
+            
+            let a = getCookie("uuidUsuarios")
+            let b = localStorage.getItem("uuidUsuarios");
+            a =  a == null ? "" : a;
+            b =  b == null ? "" : b;
+            let uuidUsuarios = a == "" ? a : b;
+            
+            if(!uuidUsuarios){
+                window.location.href = `index.html?uuid=${uuidExperiencias}&puntos=${numPuntos}`
+            }
+            
+            dataJson = {
+                "uuidUsuarios": uuidUsuarios,
+                "uuidExperiencias": uuidExperiencias,
+                "puntosExperiencias": numPuntos
+            }
+
+            const settings = {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: 
+                    JSON.stringify(dataJson)
+            };
+                            
+            try {
+                const fetchResponse = await fetch(`${urlServer}dameUsuarioByUUID`, settings);
+                const data = await fetchResponse.json();
+                resul = data.statusCode
+                let puntosTotales = data.message[0].puntosTotales
+                let nombreCompleto = data.message[0].nombreCompleto
+
+                // let valPuntos = puntosTotales == null ? 0: puntosTotales
+                
+                // document.getElementById("puntosTotales").innerHTML = valPuntos
+                // document.getElementById("nombreCompleto").innerHTML = nombreCompleto
+                
+                if(resul == 200){
+                    nombreCompleto = data.message[0].nombreCompleto
+                    document.getElementById("nombreCompleto").innerHTML = nombreCompleto
+                    let puntosTotales = data.message[0].puntosTotales
+                    document.getElementById("puntosTotales").innerHTML = puntosTotales === null ? "0 puntos" : puntosTotales + " puntos"
+                }else{
+                    console.log("Error: " + data.message)
+                }
+            } catch (e) {
+                console.log("Error:" + e)
+            }
+
+        }
+    </script>
+</body>
+</html>

@@ -4,11 +4,193 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>fiestazscaler2023.com</title>
+    <link rel="stylesheet" href="css/style.css">
+    
 </head>
-<body>
-    <h1>fiestazscaler2023.com</h1>
-    <a href="http://yellowhat.mx">
-        <h2>yellowhat.mx</h2>
-    </a>
+<body onload="cargaDatos()">
+    <!-- <img src="img/logo.jpg" alt="" srcset="" class="centerImage" onclick="borraCookie()"/> -->
+    <div class="espacio">
+        <img src="img/logo.png" class="logo" alt="" onclick="borraCookie()">
+        <div class="title">Registro de invitados: <br> "Zscaler Fiesta 2023" </div>
+        <!-- <div class="whiteLine"></div>
+        <div class="instructions">
+            Bienvenidos al portal de registro para vivir las experiencias de nuestra fiesta. <br>
+            Compártenos tus datos para poder continuar con la dinámica <br>
+        </div>
+        <div class="whiteLine"></div> -->
+        <div class="registrationForm">
+            <div class="instructionsText">
+                Correo Electrónico <b class="asterisc">*</b>
+                <input type="text" class="elmentoFormularioinput" id="correoElectronico" placeholder="Correo Electrónico*">
+                Nombre Completo <b class="asterisc"> *</b>
+                <input type="text" class="elmentoFormularioinput" id="nombreCompleto" placeholder="Nombre Completo*"> 
+                <div class="left">
+                    <b class="asterisc">*Todos los campos son obligatorios</b>
+                </div>
+            </div>
+            <div id="mensajeError" class="mensajeError"></div>
+            <button class="botonRegistrarse" onclick="guardaDatos()">Guardar Registro</button>
+        </div>
+    </div>
+    
+    <script src="js/cookies.js"></script>
+    <script>
+        let urlServer = "https://mosaico.app:4000/fiestazscaler2023/"
+
+        let uuidExperiencias = ""
+        let numPuntos = ""
+        let url = ""
+        let botonGuardarDatos = false
+
+        
+        function borraCookie(){
+            setCookie("uuidUsuarios", "",10)
+            localStorage.setItem("uuidUsuarios", "");
+        }
+
+        async function cargaDatos(){
+            let a = getCookie("uuidUsuarios")
+            let b = localStorage.getItem("uuidUsuarios");
+            a =  a == null ? "" : a;
+            b =  b == null ? "" : b;
+            let uuidUsuarios = a == "" ? a : b;
+            if(uuidUsuarios != ""){
+                window.location.href = `welcome.html`
+            }
+
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            uuidExperiencias = urlParams.get('uuid');
+            numPuntos = urlParams.get('puntos');
+            url = urlParams.get('url');
+
+            // if(uuid == null || puntos == null){
+            //     window.location.href = `index.html`
+            // }
+        }
+
+        async function guardaDatos(){
+            if (botonGuardarDatos == true){
+                console.log("salimos por doble click al boton guardar")
+                return;
+            }
+            botonGuardarDatos = true;
+            let valido = true
+            let mensaje = ""
+
+            document.getElementById("mensajeError").innerHTML = ""
+            let correoElectronico = new String(document.getElementById("correoElectronico").value);
+            let nombreCompleto = new String(document.getElementById("nombreCompleto").value);
+            
+            correoElectronico = correoElectronico.trim()
+           
+            if (nombreCompleto.length <= 5) {
+                valido = false
+                mensaje = "Nombre demasiado corto"
+            }
+             
+            if(mailInValido(correoElectronico)){
+                valido = false
+                mensaje = "correo electrónico no válido"
+            }
+
+            let datosRegistro = {
+                "correoElectronico": correoElectronico,
+                "nombreCompleto": nombreCompleto,
+            }
+            
+            if (valido){
+                let resul = await guardaEnServer(datosRegistro);
+                if (resul.error == false){
+                    let objeto = resul.message
+                    let uuidUsuarios = objeto.uuidUsuarios
+                    //let idEquipos = objeto.idEquipos
+                    setCookie("uuidUsuarios", uuidUsuarios, 10)
+                    localStorage.setItem("uuidUsuarios", uuidUsuarios);
+                    let usuarioNuevo = resul.usuarioNuevo
+                    
+                    // if(usuarioNuevo){
+                    //     window.location.href = `equipo.html?idEquipos=${idEquipos}`
+                    //     return;
+                    // }else if(url!== null ){
+                    //     window.location.href = `trivia.html?idEquipos=${idEquipos}`
+                    //     return;
+                    // }else 
+                    if((uuidExperiencias === null) && (numPuntos === null) ){
+                        window.location.href = `welcome.html`
+                        return;
+                    }else if((uuidExperiencias != "") && (numPuntos != "") ){
+                        window.location.href = `sumapuntos.html?uuidExperiencias=${uuidExperiencias}&numPuntos=${numPuntos}`
+                        return;
+                    }else{
+                        window.location.href = `welcome.html`
+                        return;
+                    }
+                    
+                }else{
+                    document.getElementById("mensajeError").innerHTML = resul.message
+                }
+            }else{
+                document.getElementById("mensajeError").innerHTML = mensaje
+            }
+            botonGuardarDatos = false;
+        }
+
+    async function guardaEnServer(datosRegistro){
+        let resul = {
+            error : true,
+            message: "",
+            idUsuario: 0,
+            statusCode: 0,
+            uuidUsuarios : "",
+            idEquipo : 0,
+            usuarioNuevo : false
+        }
+        const data = datosRegistro
+        const dataJson = JSON.stringify(data)
+
+        const settings = {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: 
+                dataJson
+        };
+        try{
+            const fetchResponse = await fetch(`${urlServer}guardaUsuario`, settings);
+            const data = await fetchResponse.json();
+            console.log("Data" + JSON.stringify(data))
+                    
+            if(data.statusCode == 200){
+                resul.error = false
+                resul.statusCode = data.statusCode
+                resul.idUsuario = data.message.insertId
+                resul.message = data.message
+                resul.uuidUsuarios = data.message.uuidUsuarios
+                resul.usuarioNuevo = data.message.usuarioNuevo
+            }else{                        
+                resul.statusCode = data.statusCode
+                resul.message = data.message
+            }
+            return resul;
+        } catch (e) {
+            console.log("Error" + e)
+            resul.statusCode = 404
+            resul.error = true
+            resul.message = e
+            return resul;
+        }
+    }
+    
+    function mailInValido(correoUsuario) {
+        let esInValido = true
+        if  (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(correoUsuario)) {
+            esInValido = false
+        } 
+        return esInValido
+    }
+    </script>
 </body>
 </html>

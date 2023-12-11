@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future Event Registro</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body onload="cargaDatos()">
+    <div class="espacio">
+        <img src="img/logo.png" class="logo" alt="">
+    </div>
+    <br><br><br>
+
+    <div class="title" id="numTotalMonedas">Agregamos 0 puntos nuevos</div> <br><br><br>
+    <div class="title" id="numNuevasMonedas">0 puntos</div>
+    
+    <img src="img/2monedas.webp" alt="" srcset="" class="centerImage4" />
+    
+    <script src="js/cookies.js"></script>
+    <script>
+
+        function borraCookie(){
+            setCookie("uuidUsuarios", "",10)
+            localStorage.setItem("uuidUsuarios", "");
+        }
+        
+        let urlServer = "https://mosaico.app:4000/fiestazscaler2023/"
+        async function cargaDatos(){
+
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            let uuid_ = urlParams.get('uuid');
+            let uuidExperiencias_ = urlParams.get('uuidExperiencias');
+            let uuidExperiencias = uuid_ == null ? uuidExperiencias_ : uuid_;
+
+            let numPuntos_ = urlParams.get('numPuntos');
+            let puntos_ = urlParams.get('puntos');
+            let numPuntos = numPuntos_ == null ? puntos_ : numPuntos_;
+ 
+            console.log({uuidExperiencias})
+            console.log({numPuntos})
+
+            let a = getCookie("uuidUsuarios")
+            let b = localStorage.getItem("uuidUsuarios");
+            a =  a == null ? "" : a;
+            b =  b == null ? "" : b;
+            let uuidUsuarios = a == "" ? a : b;
+            
+            if(!uuidUsuarios){
+                window.location.href = `index.html?uuid=${uuidExperiencias}&puntos=${numPuntos}`
+            }
+            
+            dataJson = {
+                "uuidUsuarios": uuidUsuarios,
+                "uuidExperiencias": uuidExperiencias,
+                "puntosExperiencias": numPuntos
+            }
+
+            const settings = {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: 
+                    JSON.stringify(dataJson)
+            };
+                            
+            try {
+                const fetchResponse = await fetch(`${urlServer}sumaPuntos`, settings);
+                const data = await fetchResponse.json();
+                resul = data.statusCode
+                let puntosTotales = data.message[0].puntosTotales
+                let puntosAgregados = data.message[0].puntosAgregados
+                
+                // document.getElementById("totalPuntos").innerHTML = puntosTotales
+                // document.getElementById("nombreCompleto").innerHTML = nombreCompleto
+                
+                if(resul == 200){
+                    document.getElementById("numTotalMonedas").innerHTML = "Te hemos agregado " + puntosAgregados + " puntos"
+                    document.getElementById("numNuevasMonedas").innerHTML = puntosTotales + " puntos"
+                    console.log("Puntos nuevos para este usuario")
+                }else{
+                    document.getElementById("numTotalMonedas").innerHTML = "Código QR ya escaneado previamente, inválido."
+                    document.getElementById("numNuevasMonedas").innerHTML = puntosTotales + " puntos"
+                    console.log("Puntos ya asignados a ese usuario")
+                }
+            } catch (e) {
+                console.log("Error:" + e)
+            }
+
+        }
+    </script>
+</body>
+</html>
