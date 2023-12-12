@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fiestazscaler2023.com</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+</head>
+<body onload="cargaDatos()">
+    <!-- <img src="img/logo.jpg" alt="" srcset="" class="centerImage" onclick="borraCookie()"/> -->
+    
+    <div class="espacio">
+        <img src="img/logo.png" class="logo" alt="">
+        <div class="title2">Bienvenido al Portal de <br> Zscaler Fiesta 2023</div>
+    </div>
+    <br><br><br>
+    <div class="title" >Leaderboard Usuarios:</div>
+    <br><br>
+    <div class="title" id="lista"></div>
+    
+    <script src="js/cookies.js"></script>
+    <script>
+        function borraCookie(){
+            setCookie("uuidUsuarios", "",10)
+        }
+        
+        let urlServer = "https://mosaico.app:4000/fiestazscaler2023/"
+        async function cargaDatos(){
+                            
+            try {
+                const fetchResponse = await fetch(`${urlServer}reporteTopUsuariosConPuntos`);
+                const data = await fetchResponse.json();
+                resul = data.statusCode
+                if(resul == 200){
+                    let lista = document.getElementById("lista")
+                    let html = ""
+                    for (let i = 0; i < data.message.length; i++) {
+                        if((i % 2) == 1){
+                            html += "<div class='title4'>" + data.message[i].nombreCompleto + " - " + data.message[i].puntosTotales + " puntos</div>"
+                        }else{
+                            html += "<div class='gold title4 '>" + data.message[i].nombreCompleto + " - " + data.message[i].puntosTotales + " puntos</div>"
+                        }
+                    }
+                    lista.innerHTML = html
+                }
+            } catch (e) {
+                console.log("Error:" + e)
+            }
+
+        }
+    </script>
+</body>
+</html>

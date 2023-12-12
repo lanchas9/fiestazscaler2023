@@ -164,6 +164,10 @@ body {
     color: #DC2128;
 }
 
+.gold{
+    color: goldenrod;
+}
+
 .espacio{
     margin-top: 40vh;
 }
@@ -175,6 +179,13 @@ body {
     margin-bottom: 15%;
 }
 
+.logo2{
+    width: 60%;
+    margin-left: 20%;
+    margin-top: 10%;
+    margin-bottom: 5%;
+}
+
 
 .centerImage4 {
     display: block;
@@ -182,4 +193,19 @@ body {
     margin-right: auto;
     width: 30%;
     max-width: 100px;
+}
+
+.qr{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 250px;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    background-color: white;
+    padding: 20px;
+}
+
+.blanco{
+    background-color: white;
 }
